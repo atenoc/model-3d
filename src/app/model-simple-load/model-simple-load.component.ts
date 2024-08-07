@@ -22,7 +22,8 @@ export class ModelSimpleLoadComponent implements OnInit {
 
   constructor() {
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    //this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    this.camera = new THREE.PerspectiveCamera(75, 1500 / 1000, 0.1, 1000);
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.composer = new EffectComposer(this.renderer); 
   }
@@ -31,6 +32,10 @@ export class ModelSimpleLoadComponent implements OnInit {
     this.initScene();
     this.loadLocalModel(); // Cargar modelo local
     this.animate();
+
+    this.setupControls();
+    window.addEventListener('resize', () => this.onWindowResize(), false);
+    document.addEventListener('fullscreenchange', () => this.onFullscreenChange());
   }
 
   private initScene(): void {
@@ -38,10 +43,9 @@ export class ModelSimpleLoadComponent implements OnInit {
     this.camera.position.set(0, 0, 5);
   
     // Configurar el renderizador
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setSize(1500, 1000); // Set the renderer size to 1000px by 500px
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setClearColor(0xeeeeee);
-    //this.renderer.setClearColor(0xffffff);
     this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.0;
@@ -84,72 +88,11 @@ export class ModelSimpleLoadComponent implements OnInit {
     this.composer = new EffectComposer(this.renderer);
     const renderPass = new RenderPass(this.scene, this.camera);
     this.composer.addPass(renderPass);
-  
-    /* para resaltar brillo
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight),
-      0.1,
-      0.1,
-      0.1
-    );
-    this.composer.addPass(bloomPass);*/
   }
-  
-  
-
-  /* Respaldo: Se mira más o menos
-  
-  private initScene(): void {
-    // Configurar la cámara
-    this.camera.position.set(0, 0, 5);
-
-    // Configurar el renderizador
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.setClearColor(0xffffff); // Establece el color de fondo del renderizador a blanco
-    this.renderer.outputEncoding = THREE.sRGBEncoding;
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.0;
-
-    document.getElementById('modelContainer')?.appendChild(this.renderer.domElement);
-
-    // Añadir luz
-    const ambientLight = new THREE.AmbientLight(0xffffff, 2); // Luz ambiental
-    this.scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 5); // Luz direccional
-    directionalLight.position.set(1, 1, 1).normalize();
-    this.scene.add(directionalLight);
-
-    // Añadir controles de órbita
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.enableDamping = true; // Suaviza el movimiento
-    this.controls.dampingFactor = 0.25;
-    this.controls.enableZoom = true;
-
-    // Configurar post-procesamiento
-    this.composer = new EffectComposer(this.renderer);
-    const renderPass = new RenderPass(this.scene, this.camera);
-    this.composer.addPass(renderPass);
-  }
-    
-  private animate(): void {
-    requestAnimationFrame(() => this.animate());
-    if (this.controls) {
-      this.controls.update(); // Actualiza los controles si están inicializados
-    }
-    this.composer.render(); // Usar el compositor para renderizado
-  }
-  
-  */
 
   private loadLocalModel(): void {
     // URL del modelo GLB local
-    //const url = 'assets/model3d/volkswagen_golf_gl_1990.glb';
-    
-    //const url = 'assets/model3d/700_follower_special_van_downloadable_4k.glb';
     const url = 'assets/model3d/wolverine.glb';
-    //const url = 'assets/model3d/deadpool.glb';
-    
 
     const loader = new GLTFLoader();
     loader.load(url, (gltf) => {
@@ -167,5 +110,91 @@ export class ModelSimpleLoadComponent implements OnInit {
     this.composer.render(); // Usar el compositor para renderizado
   }
 
+  private setupControls(): void {
+    const fullscreenButton = document.getElementById('fullscreenButton');
+    const exitFullscreenButton = document.getElementById('exitFullscreenButton');
+    const zoomInButton = document.getElementById('zoomInButton');
+    const zoomOutButton = document.getElementById('zoomOutButton');
 
+    fullscreenButton?.addEventListener('click', () => this.toggleFullscreen());
+    exitFullscreenButton?.addEventListener('click', () => this.exitFullscreen());
+    zoomInButton?.addEventListener('click', () => this.zoomIn());
+    zoomOutButton?.addEventListener('click', () => this.zoomOut());
+
+    this.updateFullscreenButtons();
+  }
+
+  private toggleFullscreen(): void {
+    const elem = document.getElementById('modelContainer');
+    if (elem) {
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if ((<any>elem).webkitRequestFullscreen) { /* Safari */
+        (<any>elem).webkitRequestFullscreen();
+      } else if ((<any>elem).msRequestFullscreen) { /* IE11 */
+        (<any>elem).msRequestFullscreen();
+      }
+      this.onWindowResize(); // Llama a la función para ajustar el tamaño al entrar en modo pantalla completa
+    }
+  }
+
+  private exitFullscreen(): void {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if ((<any>document).webkitExitFullscreen) { /* Safari */
+      (<any>document).webkitExitFullscreen();
+    } else if ((<any>document).msExitFullscreen) { /* IE11 */
+      (<any>document).msExitFullscreen();
+    }
+  }
+
+  private zoomIn(): void {
+    if (this.camera && this.controls) {
+      const distance = this.camera.position.distanceTo(this.controls.target);
+      const newDistance = Math.max(distance * 0.9, 1); // Adjust the zoom factor as needed
+      this.camera.position.setLength(newDistance);
+      this.controls.update();
+    }
+  }
+
+  private zoomOut(): void {
+    if (this.camera && this.controls) {
+      const distance = this.camera.position.distanceTo(this.controls.target);
+      const newDistance = distance * 1.1; // Adjust the zoom factor as needed
+      this.camera.position.setLength(newDistance);
+      this.controls.update();
+    }
+  }
+
+  private onWindowResize(): void {
+    const container = document.getElementById('modelContainer');
+    if (container) {
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      this.camera.aspect = width / height;
+      this.camera.updateProjectionMatrix();
+
+      this.renderer.setSize(width, height);
+      this.composer.setSize(width, height);
+    }
+  }
+
+  private onFullscreenChange(): void {
+    this.updateFullscreenButtons();
+    this.onWindowResize(); // Adjust size when entering/exiting fullscreen
+  }
+
+  private updateFullscreenButtons(): void {
+    const fullscreenButton = document.getElementById('fullscreenButton');
+    const exitFullscreenButton = document.getElementById('exitFullscreenButton');
+    const isFullscreen = !!document.fullscreenElement;
+
+    if (fullscreenButton) {
+      fullscreenButton.style.display = isFullscreen ? 'none' : 'block';
+    }
+    if (exitFullscreenButton) {
+      exitFullscreenButton.style.display = isFullscreen ? 'block' : 'none';
+    }
+  }
 }
