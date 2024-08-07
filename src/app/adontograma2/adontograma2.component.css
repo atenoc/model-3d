@@ -1,0 +1,26 @@
+.cursor-pan {
+    cursor: grab; /* O 'grabbing' si prefieres que parezca agarrar */
+}
+
+/* Estilo CSS para el borde del canvas */
+.canvas-border {
+    border: 1px solid #858585; /* Cambia '4px' por el grosor deseado y '#ff0000' por el color deseado */
+}
+
+.brusheSize{
+    position: absolute;
+    margin-left: 144px;
+    margin-top: -27px;
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+.div-scroll {
+    height: 220px;
+    overflow-y: auto; /* Muestra scroll vertical si es necesario */
+}
+  
+.font-size{
+    font-size: 12px;
+}
+  
