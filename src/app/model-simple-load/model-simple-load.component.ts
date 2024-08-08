@@ -23,13 +23,14 @@ export class ModelSimpleLoadComponent implements OnInit {
   constructor() {
     this.scene = new THREE.Scene();
     //this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    this.camera = new THREE.PerspectiveCamera(75, 1500 / 1000, 0.1, 1000);
+    this.camera = new THREE.PerspectiveCamera(75, 1500 / 800, 0.1, 1000);
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.composer = new EffectComposer(this.renderer); 
   }
 
   ngOnInit(): void {
     this.initScene();
+    this.createGradientBackground();
     this.loadLocalModel(); // Cargar modelo local
     this.animate();
 
@@ -43,9 +44,9 @@ export class ModelSimpleLoadComponent implements OnInit {
     this.camera.position.set(0, 0, 5);
   
     // Configurar el renderizador
-    this.renderer.setSize(1500, 1000); // Set the renderer size to 1000px by 500px
+    this.renderer.setSize(1500, 800); // Set the renderer size to 1000px by 500px
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setClearColor(0xeeeeee);
+    //this.renderer.setClearColor(0xeeeeee);
     this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.0;
@@ -92,7 +93,7 @@ export class ModelSimpleLoadComponent implements OnInit {
 
   private loadLocalModel(): void {
     // URL del modelo GLB local
-    const url = 'assets/model3d/wolverine.glb';
+    const url = 'assets/model3d/adult_tooth_morphology.glb';
 
     const loader = new GLTFLoader();
     loader.load(url, (gltf) => {
@@ -115,11 +116,13 @@ export class ModelSimpleLoadComponent implements OnInit {
     const exitFullscreenButton = document.getElementById('exitFullscreenButton');
     const zoomInButton = document.getElementById('zoomInButton');
     const zoomOutButton = document.getElementById('zoomOutButton');
+    const captureButton = document.getElementById('captureButton');
 
     fullscreenButton?.addEventListener('click', () => this.toggleFullscreen());
     exitFullscreenButton?.addEventListener('click', () => this.exitFullscreen());
     zoomInButton?.addEventListener('click', () => this.zoomIn());
     zoomOutButton?.addEventListener('click', () => this.zoomOut());
+    captureButton?.addEventListener('click', () => this.captureImage());
 
     this.updateFullscreenButtons();
   }
@@ -151,7 +154,7 @@ export class ModelSimpleLoadComponent implements OnInit {
   private zoomIn(): void {
     if (this.camera && this.controls) {
       const distance = this.camera.position.distanceTo(this.controls.target);
-      const newDistance = Math.max(distance * 0.9, 1); // Adjust the zoom factor as needed
+      const newDistance = Math.max(distance * 0.9, 5); // Adjust the zoom factor as needed
       this.camera.position.setLength(newDistance);
       this.controls.update();
     }
@@ -160,7 +163,7 @@ export class ModelSimpleLoadComponent implements OnInit {
   private zoomOut(): void {
     if (this.camera && this.controls) {
       const distance = this.camera.position.distanceTo(this.controls.target);
-      const newDistance = distance * 1.1; // Adjust the zoom factor as needed
+      const newDistance = distance * 1.5; // Adjust the zoom factor as needed
       this.camera.position.setLength(newDistance);
       this.controls.update();
     }
@@ -197,4 +200,55 @@ export class ModelSimpleLoadComponent implements OnInit {
       exitFullscreenButton.style.display = isFullscreen ? 'block' : 'none';
     }
   }
+
+  private captureImage(): void {
+    this.renderer.render(this.scene, this.camera);
+    const canvas = this.renderer.domElement;
+    const dataURL = canvas.toDataURL('image/png');
+    const imageElement = document.getElementById('capturedImage') as HTMLImageElement;
+    imageElement.src = dataURL;
+    imageElement.style.display = 'block';
+    console.log("imágen capturada: "+dataURL)
+  }
+
+  private createGradientBackground(): void {
+    const vertexShader = `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `;
+
+    const fragmentShader = `
+        uniform vec3 color1;
+        uniform vec3 color2;
+        uniform vec3 color3;
+        varying vec2 vUv;
+        void main() {
+            vec3 color = mix(color1, color2, vUv.y);
+            color = mix(color, color3, smoothstep(0.5, 1.0, vUv.y));
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `;
+
+    const uniforms = {
+        color1: { value: new THREE.Color(0xff0000) }, // Color superior
+        color2: { value: new THREE.Color(0x00ff00) }, // Color medio
+        color3: { value: new THREE.Color(0x0000ff) }  // Color inferior
+    };
+
+    const gradientMaterial = new THREE.ShaderMaterial({
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        uniforms: uniforms,
+        side: THREE.BackSide // Renderizar el interior de la esfera
+    });
+
+    const sphereGeometry = new THREE.SphereGeometry(500, 32, 32);
+    const gradientMesh = new THREE.Mesh(sphereGeometry, gradientMaterial);
+    this.scene.add(gradientMesh);
+}
+
+
 }
