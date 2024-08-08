@@ -6,6 +6,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { BloomPass } from 'three/examples/jsm/postprocessing/BloomPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
+import { SharedServiceService } from '../services/shared-service.service';
 
 @Component({
   selector: 'app-model-simple-load',
@@ -20,7 +21,7 @@ export class ModelSimpleLoadComponent implements OnInit {
   private controls: OrbitControls | null = null;
   private composer: EffectComposer;
 
-  constructor() {
+  constructor(private sharedService: SharedServiceService) {
     this.scene = new THREE.Scene();
     //this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     this.camera = new THREE.PerspectiveCamera(75, 1500 / 800, 0.1, 1000);
@@ -44,7 +45,7 @@ export class ModelSimpleLoadComponent implements OnInit {
     this.camera.position.set(0, 0, 5);
   
     // Configurar el renderizador
-    this.renderer.setSize(1500, 800); // Set the renderer size to 1000px by 500px
+    this.renderer.setSize(1300, 800); // Set the renderer size to 1000px by 500px
     this.renderer.setPixelRatio(window.devicePixelRatio);
     //this.renderer.setClearColor(0xeeeeee);
     this.renderer.outputEncoding = THREE.sRGBEncoding;
@@ -191,6 +192,8 @@ export class ModelSimpleLoadComponent implements OnInit {
   private updateFullscreenButtons(): void {
     const fullscreenButton = document.getElementById('fullscreenButton');
     const exitFullscreenButton = document.getElementById('exitFullscreenButton');
+    const captureButton = document.getElementById('captureButton');
+
     const isFullscreen = !!document.fullscreenElement;
 
     if (fullscreenButton) {
@@ -198,6 +201,9 @@ export class ModelSimpleLoadComponent implements OnInit {
     }
     if (exitFullscreenButton) {
       exitFullscreenButton.style.display = isFullscreen ? 'block' : 'none';
+    }
+    if (captureButton) {
+      captureButton.style.display = isFullscreen ? 'none' : 'block';
     }
   }
 
@@ -207,7 +213,8 @@ export class ModelSimpleLoadComponent implements OnInit {
     const dataURL = canvas.toDataURL('image/png');
     const imageElement = document.getElementById('capturedImage') as HTMLImageElement;
     imageElement.src = dataURL;
-    imageElement.style.display = 'block';
+    //imageElement.style.display = 'block';
+    this.sharedService.setImage(dataURL)
     console.log("imágen capturada: "+dataURL)
   }
 
@@ -235,7 +242,7 @@ export class ModelSimpleLoadComponent implements OnInit {
     const uniforms = {
         color1: { value: new THREE.Color(0xadadad) }, // Color superior   blanco
         color2: { value: new THREE.Color(0x000000) }, // Color medio      negro
-        color3: { value: new THREE.Color(0xffffff) }  // Color inferior   blanco
+        color3: { value: new THREE.Color(0xededed) }  // Color inferior   blanco
     };
 
     const gradientMaterial = new THREE.ShaderMaterial({

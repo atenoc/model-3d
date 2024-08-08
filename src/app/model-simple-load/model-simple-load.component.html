@@ -1,23 +1,18 @@
 <p>3d Model</p>
-<!-- model-simple-load.component.html -->
-<!-- <div id="modelContainer" style="position: relative; width: 100%; height: 100%;"> -->
 
-    <div class="container">
-
-        <div id="modelContainer" style="position: relative; width: 1500px; height: 800px">
-            <!-- Botones de control -->
-            <button id="fullscreenButton" class="btn btn-primary" style="position: absolute; top: 10px; right: 10px;">Full screen</button>
-            <button id="exitFullscreenButton" class="btn btn-primary" style="position: absolute; top: 10px; right: 10px; display: none;">Salir</button>
-            <button id="zoomInButton" class="btn btn-primary" style="position: absolute; top: 50px; right: 10px;">Zoom In</button>
-            <button id="zoomOutButton" class="btn btn-primary" style="position: absolute; top: 90px; right: 10px;">Zoom Out</button>
-            <button id="captureButton" class="btn btn-primary" style="position: absolute; top: 130px; right: 10px;">Capturar imagen</button>
-          </div>
-          
-          <div id="capturedImageContainer" style="margin-top: 20px;">
-            <h3>Imagen capturada:</h3>
-            <!-- <img id="capturedImage" src="" alt="Imagen del modelo 3D" style="width: 500px; height: auto;" /> -->
-            <img id="capturedImage" src="" style="display: block; margin-top: 20px; border-color: red;" />
-          </div>
-    </div>
-
+<div id="modelContainer" style="position: relative; width: 100%; height: 800px;">
+  <!-- Contenedor de botones de control -->
+  <div id="controlButtonsContainer" style="position: absolute; bottom: 10px; right: 10px; display: flex; gap: 10px;">
+    <button id="captureButton" class="btn btn-warning">Capturar imagen <i class="fas fa-camera-retro"></i></button>
+    <button id="zoomInButton" class="btn btn-outline-warning">Acercar <i class="fas fa-search-plus"></i></button>
+    <button id="zoomOutButton" class="btn btn-outline-warning">Alejar <i class="fas fa-search-minus"></i></button>
+    <button id="fullscreenButton" class="btn btn-outline-warning">Pantalla completa <i class="fas fa-expand"></i></button>
+    <button id="exitFullscreenButton" class="btn btn-outline-warning" style="display: none;">Salir <i class="fas fa-compress"></i></button>
     
+  </div>
+</div>
+
+<div id="capturedImageContainer" style="margin-top: 20px;">
+  <h3>Imagen capturada:</h3>
+  <img id="capturedImage" src="" style="display: none; margin-top: 20px; border-color: red;"/>
+</div>

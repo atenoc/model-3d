@@ -7,13 +7,15 @@ import { FormsModule } from '@angular/forms';
 import { Adontograma2Component } from './adontograma2/adontograma2.component';
 import { Model3dComponent } from './model3d/model3d.component';
 import { ModelSimpleLoadComponent } from './model-simple-load/model-simple-load.component';
+import { HomeModelsComponent } from './home-models/home-models.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     Adontograma2Component,
     Model3dComponent,
-    ModelSimpleLoadComponent
+    ModelSimpleLoadComponent,
+    HomeModelsComponent
   ],
   imports: [
     BrowserModule,

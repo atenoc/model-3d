@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, HostListener } from '@angular/core';
 import { fabric } from 'fabric';
+import { SharedServiceService } from '../services/shared-service.service';
 
 @Component({
   selector: 'app-adontograma2',
@@ -25,17 +26,34 @@ export class Adontograma2Component implements AfterViewInit{
   
   texto!: fabric.Text; // Suponiendo que ya tienes una variable de clase para el texto
 
-  constructor() { }
+  constructor(private sharedService: SharedServiceService) { }
 
   ngAfterViewInit(): void {
     this.canvas = new fabric.Canvas('canvas', {
-      width: 1050,
+      width: 1300,
       height: 800
     });
 
     // Inicializar tu canvas aquí
     this.dibujarCapas();
     this.dibujar(); // Inicia con el modo de dibujo activado
+
+    // Suscribirse para recibir la imagen capturada
+    this.sharedService.getImage().subscribe(imageData => {
+      if (imageData) {
+        // Eliminar la imagen previa
+        this.removePreviousImage();
+
+        // Agregar la nueva imagen
+        fabric.Image.fromURL(imageData, (imagen) => {
+          imagen.data = { isBackground: true };
+          imagen.selectable = false;
+          imagen.evented = false;
+          this.canvas.add(imagen);
+          this.canvas.sendToBack(imagen);
+        });
+      }
+    });
 
     this.agregarTexto();
     // Suscribirse al evento 'object:added' para asegurar que el texto siempre esté en la capa superior
@@ -45,20 +63,42 @@ export class Adontograma2Component implements AfterViewInit{
     });
   }
 
+  private removePreviousImage(): void {
+    // Buscar y eliminar la imagen de fondo previa
+    const objects = this.canvas.getObjects('image');
+    const backgroundImage = objects.find(obj => obj.data?.isBackground);
+
+    if (backgroundImage) {
+      this.canvas.remove(backgroundImage);
+    }
+  }
+
   dibujarCapas() {
     fabric.Image.fromURL('assets/odontograma.jpg', (imagen) => {
       imagen.data = { isBackground: true };
-      imagen.selectable = false; // Evitar que la imagen de fondo sea seleccionable
-      imagen.evented = false; // Evitar que la imagen de fondo responda a eventos
+      imagen.selectable = false;
+      imagen.evented = false;
+  
+      // Calcular la posición para centrar la imagen en el canvas
+      const canvasWidth = this.canvas.getWidth();
+      const canvasHeight = this.canvas.getHeight();
+  
+      // Redimensionar la imagen si es necesario (opcional)
+      const scaleFactor = Math.min(canvasWidth / imagen.width!, canvasHeight / imagen.height!);
+  
+      // Centrar la imagen en el canvas
+      imagen.set({
+        left: (canvasWidth - imagen.width! * scaleFactor) / 2,
+        top: (canvasHeight - imagen.height! * scaleFactor) / 2,
+        scaleX: scaleFactor,
+        scaleY: scaleFactor,
+      });
+  
       this.canvas.add(imagen);
       this.canvas.sendToBack(imagen);
-    });    
+      this.canvas.renderAll();
+    });
   }
-
-  /*seleccionar() {
-    this.canvas.isDrawingMode = false;
-    this.canvas.off('mouse:down'); // Asegurarse de desactivar el borrador
-  }*/
 
   seleccionar() {
     this.canvas.isDrawingMode = false; // Desactivar el modo de dibujo
@@ -101,18 +141,6 @@ export class Adontograma2Component implements AfterViewInit{
     }
   }
 
-  /*borrador() {
-    this.canvas.isDrawingMode = false;
-    // Remover previamente cualquier manejador de eventos de borrado para evitar duplicados
-    this.canvas.off('mouse:down');
-    this.canvas.on('mouse:down', (options) => {
-      const objeto = options.target;
-      if (objeto && !objeto.data?.isBackground) {
-        this.canvas.remove(objeto);
-      }
-    });
-  }*/
-
   borrador() {
     this.canvas.isDrawingMode = false; // Desactivar el modo de dibujo
     // Deseleccionar cualquier objeto activo en el canvas
@@ -135,17 +163,6 @@ export class Adontograma2Component implements AfterViewInit{
     this.canvas.defaultCursor = 'no-drop';
 
   }
-
-  /*resetCanvas() {
-    const objetos = this.canvas.getObjects();
-    for (let i = objetos.length - 1; i >= 0; i--) {
-      // Verificar si el objeto actual no es la capa de fondo
-      if (!objetos[i].data?.isBackground) {
-        this.canvas.remove(objetos[i]);
-      }
-    }
-    this.canvas.renderAll(); // Renderizar el estado actual del canvas
-  }*/
 
   resetCanvas() {
     const objetos = this.canvas.getObjects();
@@ -265,7 +282,7 @@ export class Adontograma2Component implements AfterViewInit{
 
   agregarTexto() {
     this.texto = new fabric.Text('Paciente: Fulanito Tal... - Fecha: 09/03/2024', {
-      left: 320, // Posición horizontal desde el borde izquierdo del canvas
+      left: 650, // Posición horizontal desde el borde izquierdo del canvas
       top: 34, // Posición vertical desde el borde superior del canvas
       fontFamily: 'Arial',
       fontSize: 15,
@@ -276,10 +293,44 @@ export class Adontograma2Component implements AfterViewInit{
     this.canvas.add(this.texto);
   }
 
+  // Método para mostrar el input file
+  uploadImage(): void {
+    const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+    fileInput.click();
+  }
 
-  
-  
-  
+  // Manejar la carga del archivo seleccionado
+  handleFileInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const imageData = e.target.result as string;
+        this.removePreviousImage();
+        this.addImageToCanvas(imageData);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  private addImageToCanvas(imageData: string): void {
+    fabric.Image.fromURL(imageData, (imagen) => {
+      const canvasWidth = this.canvas.getWidth();
+      const canvasHeight = this.canvas.getHeight();
+      const scaleFactor = Math.min(canvasWidth / imagen.width!, canvasHeight / imagen.height!);
+
+      imagen.set({
+        left: (canvasWidth - imagen.width! * scaleFactor) / 2,
+        top: (canvasHeight - imagen.height! * scaleFactor) / 2,
+        scaleX: scaleFactor,
+        scaleY: scaleFactor,
+      });
+
+      this.canvas.add(imagen);
+      this.canvas.sendToBack(imagen);
+      this.canvas.renderAll();
+    });
+  }
+
 }
-  
-
