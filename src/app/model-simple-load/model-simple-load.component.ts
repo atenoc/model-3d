@@ -233,9 +233,9 @@ export class ModelSimpleLoadComponent implements OnInit {
     `;
 
     const uniforms = {
-        color1: { value: new THREE.Color(0xff0000) }, // Color superior
-        color2: { value: new THREE.Color(0x00ff00) }, // Color medio
-        color3: { value: new THREE.Color(0x0000ff) }  // Color inferior
+        color1: { value: new THREE.Color(0xadadad) }, // Color superior   blanco
+        color2: { value: new THREE.Color(0x000000) }, // Color medio      negro
+        color3: { value: new THREE.Color(0xffffff) }  // Color inferior   blanco
     };
 
     const gradientMaterial = new THREE.ShaderMaterial({
