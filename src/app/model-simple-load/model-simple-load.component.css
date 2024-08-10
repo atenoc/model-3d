@@ -6,4 +6,24 @@
     background-color: black !important;
 }
 
+.size-img {
+    width: 100px !important;
+    height: 100px !important;
+    /*object-fit: cover !important;  Mantiene la proporción de la imagen mientras llena el contenedor */
+    transition: transform 0.3s ease; /* Transición suave */
+
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4); /* Sombreado interno */
+    /*border-radius: 8px; /* Redondea los bordes para hacer que el sombreado sea más visible */
+}
+
+.size-img:hover {
+    transform: scale(1.1); /* Aumenta el tamaño al pasar el cursor */
+}
+
+.card-body{
+    padding: 8px !important;
+}
   
+.list-inline.text-center{
+    margin: 0px 0px 1px !important;
+}

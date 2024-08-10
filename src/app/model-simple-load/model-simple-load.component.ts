@@ -7,6 +7,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { BloomPass } from 'three/examples/jsm/postprocessing/BloomPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
 import { SharedServiceService } from '../services/shared-service.service';
+import { Resources } from '../shared/resources';
 
 @Component({
   selector: 'app-model-simple-load',
@@ -20,6 +21,10 @@ export class ModelSimpleLoadComponent implements OnInit {
   private renderer: THREE.WebGLRenderer;
   private controls: OrbitControls | null = null;
   private composer: EffectComposer;
+  private currentModel: THREE.Object3D | undefined; // Para almacenar el modelo actual
+  private initialCameraPosition = new THREE.Vector3(0, 0, 5); // Guarda la posición inicial de la cámara
+
+  imageModel1:string = Resources.URL_IMG_MODEL1
 
   constructor(private sharedService: SharedServiceService) {
     this.scene = new THREE.Scene();
@@ -32,7 +37,7 @@ export class ModelSimpleLoadComponent implements OnInit {
   ngOnInit(): void {
     this.initScene();
     this.createGradientBackground();
-    this.loadLocalModel(); // Cargar modelo local
+    this.loadLocalModel(Resources.URL_MODEL1); // Cargar modelo inicial
     this.animate();
 
     this.setupControls();
@@ -42,7 +47,8 @@ export class ModelSimpleLoadComponent implements OnInit {
 
   private initScene(): void {
     // Configurar la cámara
-    this.camera.position.set(0, 0, 5);
+    //this.camera.position.set(0, 0, 5);
+    this.camera.position.copy(this.initialCameraPosition); // Posición inicial de la cámara
   
     // Configurar el renderizador
     this.renderer.setSize(1300, 800); // Set the renderer size to 1000px by 500px
@@ -92,7 +98,7 @@ export class ModelSimpleLoadComponent implements OnInit {
     this.composer.addPass(renderPass);
   }
 
-  private loadLocalModel(): void {
+  /*private loadLocalModel(): void {
     // URL del modelo GLB local
     const url = 'assets/model3d/adult_tooth_morphology.glb';
 
@@ -102,7 +108,21 @@ export class ModelSimpleLoadComponent implements OnInit {
     }, undefined, (error) => {
       console.error('Error al cargar el modelo GLB', error);
     });
+  }*/
+
+  private loadLocalModel(url: string): void {
+      const loader = new GLTFLoader();
+      loader.load(url, (gltf) => {
+        if (this.currentModel) {
+          this.scene.remove(this.currentModel); // Eliminar el modelo anterior si existe
+        }
+        this.currentModel = gltf.scene;
+        this.scene.add(gltf.scene); // Añadir el nuevo modelo
+      }, undefined, (error) => {
+        console.error('Error al cargar el modelo GLB', error);
+      });
   }
+    
 
   private animate(): void {
     requestAnimationFrame(() => this.animate());
@@ -166,6 +186,14 @@ export class ModelSimpleLoadComponent implements OnInit {
       const distance = this.camera.position.distanceTo(this.controls.target);
       const newDistance = distance * 1.5; // Adjust the zoom factor as needed
       this.camera.position.setLength(newDistance);
+      this.controls.update();
+    }
+  }
+
+  resetView(): void {
+    if (this.camera && this.controls) {
+      this.camera.position.copy(this.initialCameraPosition); // Restablece la posición de la cámara
+      this.controls.reset(); // Restablece los controles de órbita
       this.controls.update();
     }
   }
@@ -255,7 +283,20 @@ export class ModelSimpleLoadComponent implements OnInit {
     const sphereGeometry = new THREE.SphereGeometry(500, 32, 32);
     const gradientMesh = new THREE.Mesh(sphereGeometry, gradientMaterial);
     this.scene.add(gradientMesh);
-}
+  }
+
+  changeModel1(): void {
+    const newModelUrl = Resources.URL_MODEL1; // Cambia a la URL del nuevo modelo
+    this.loadLocalModel(newModelUrl);
+    this.resetView()
+    
+  }
+
+  changeModel2(): void {
+    const newModelUrl = Resources.URL_MODEL2; // Cambia a la URL del nuevo modelo
+    this.loadLocalModel(newModelUrl);
+    this.resetView()
+  }
 
 
 }

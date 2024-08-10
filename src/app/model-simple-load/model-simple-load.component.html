@@ -1,11 +1,45 @@
 <p>3d Model</p>
 
-<div id="modelContainer" style="position: relative; width: 100%; height: 800px;">
+<div class="card">
+
+  <div class="card-header">
+    <strong>Modelos 3D disponibles <i class="fas fa-cube"></i></strong>
+  </div>
+  <div class="card-body">
+
+    <div class="container">
+      <ul class="list-inline text-center">
+          <li class="list-inline-item" (click)="changeModel1()">
+              <img src="{{ imageModel1 }}" class="img-thumbnail size-img" alt="Image 1">
+          </li>
+          <li class="list-inline-item" (click)="changeModel2()" >
+              <img src="https://png.pngtree.com/png-clipart/20230927/original/pngtree-3d-illustration-of-fitting-dentures-png-image_13143678.png" class="img-thumbnail size-img" alt="Image 2">
+          </li>
+          <li class="list-inline-item">
+              <img src="https://img.freepik.com/fotos-premium/3d-que-rinde-elementos-diseno-diente-cuidado-dental-fondo-azul_92790-560.jpg" class="img-thumbnail size-img" alt="Image 3">
+          </li>
+          <li class="list-inline-item">
+              <img src="https://www.pngmart.com/files/17/White-Tooth-Transparent-PNG.png" class="img-thumbnail size-img" alt="Image 4">
+          </li>
+          <li class="list-inline-item">
+              <img src="https://ouch-cdn2.icons8.com/p_DJRFp3_D_hXxBOjARUPfZ9ffrxTZj5eL0baQl47IY/rs:fit:368:438/czM6Ly9pY29uczgu/b3VjaC1wcm9kLmFz/c2V0cy9wbmcvMjk1/LzcwNzIwMmJlLWI4/ZTgtNDQ3My1iMjBk/LWI0NzkyMjcxNTBk/ZC5wbmc.png" class="img-thumbnail size-img" alt="Image 5">
+          </li>
+          <li class="list-inline-item">
+              <img src="https://png.pngtree.com/png-clipart/20230927/original/pngtree-3d-illustration-of-fitting-dentures-png-image_13143678.png" class="img-thumbnail size-img" alt="Image 6">
+          </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<div id="modelContainer" class="mt-4" style="position: relative; width: 100%; height: 800px;">
   <!-- Contenedor de botones de control -->
   <div id="controlButtonsContainer" style="position: absolute; bottom: 10px; right: 10px; display: flex; gap: 10px;">
     <button id="captureButton" class="btn btn-warning">Capturar imagen <i class="fas fa-camera-retro"></i></button>
     <button id="zoomInButton" class="btn btn-outline-warning">Acercar <i class="fas fa-search-plus"></i></button>
     <button id="zoomOutButton" class="btn btn-outline-warning">Alejar <i class="fas fa-search-minus"></i></button>
+    <button id="resetViewButton" (click)="resetView()" class="btn btn-warning">Resetear Vista <i class="far fa-dot-circle"></i></button>
     <button id="fullscreenButton" class="btn btn-outline-warning">Pantalla completa <i class="fas fa-expand"></i></button>
     <button id="exitFullscreenButton" class="btn btn-outline-warning" style="display: none;">Salir <i class="fas fa-compress"></i></button>
     
@@ -13,6 +47,6 @@
 </div>
 
 <div id="capturedImageContainer" style="margin-top: 20px;">
-  <h3>Imagen capturada:</h3>
+  <h4>Editar imagen</h4>
   <img id="capturedImage" src="" style="display: none; margin-top: 20px; border-color: red;"/>
 </div>

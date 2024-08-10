@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, HostListener } from '@angular/core';
 import { fabric } from 'fabric';
 import { SharedServiceService } from '../services/shared-service.service';
+import { Resources } from '../shared/resources';
 
 @Component({
   selector: 'app-adontograma2',
@@ -74,7 +75,7 @@ export class Adontograma2Component implements AfterViewInit{
   }
 
   dibujarCapas() {
-    fabric.Image.fromURL('assets/odontograma.jpg', (imagen) => {
+    fabric.Image.fromURL(Resources.URL_IMG_ODONTOGRAMA_1, (imagen) => {
       imagen.data = { isBackground: true };
       imagen.selectable = false;
       imagen.evented = false;
